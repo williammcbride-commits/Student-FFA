@@ -1,229 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FFA Chapter Network Platform</title>
-
-<style>
-:root {
-  --ffa-blue: #0033A0;
-  --ffa-gold: #FFB81C;
-  --light-bg: #f4f6fb;
-}
-body {
-  margin:0; font-family:'Arial', sans-serif; background:var(--light-bg); color:#222;
-}
-header { background:var(--ffa-blue); color:white; padding:1rem; text-align:center; }
-nav { background:var(--ffa-gold); padding:0.5rem; text-align:center; }
-nav a { margin:0 10px; text-decoration:none; color:#000; font-weight:bold; }
-section { padding:2rem; max-width:1100px; margin:auto; }
-.card { background:white; padding:1rem; margin:1rem 0; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.animals img { width:100%; max-width:300px; border-radius:10px; margin:10px; }
-.topic-btn { background:var(--ffa-gold); color:#000; border:none; padding:8px 12px; margin:5px; border-radius:5px; cursor:pointer; font-weight:bold; }
-.topic-btn:hover { opacity:0.8; }
-footer { text-align:center; padding:1rem; background:var(--ffa-blue); color:white; margin-top:2rem; }
-#chatBox, #msgBox { border:1px solid #ccc; padding:10px; height:250px; overflow-y:auto; margin-bottom:10px; background:#fff; }
-input { padding:8px; width:70%; }
-button { background:var(--ffa-blue); color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; margin-top:5px; }
-button:hover { opacity:0.9; }
-.user-msg { text-align:right; color:var(--ffa-blue); margin:5px 0; }
-.ai-msg { text-align:left; color:var(--ffa-gold); margin:5px 0; }
-html { scroll-behavior:smooth; }
-@media(max-width:600px){ input {width:100%; margin-bottom:10px;} button,.topic-btn{width:100%;} }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FFA Animal & Agriculture Info</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Caveat', cursive;
+      background-color: #eaf2e3; /* light green background */
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #004d00; /* dark green */
+      color: #ffd700; /* gold */
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 10px;
+      background-color: #006600;
+    }
+    nav a {
+      color: #ffd700;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    section h2 {
+      color: #004d00;
+      border-bottom: 2px solid #ffd700;
+      padding-bottom: 5px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    ul li {
+      margin: 10px 0;
+    }
+    ul li a {
+      color: #006600;
+      text-decoration: none;
+    }
+    ul li a:hover {
+      text-decoration: underline;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    footer {
+      background-color: #004d00;
+      color: #ffd700;
+      text-align: center;
+      padding: 15px;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>FFA Chapter Network Platform</h1>
-  <p>Leadership • Agriculture • Education</p>
-</header>
+  <header>
+    <h1>FFA Animal & Agriculture Info</h1>
+    <p>All the latest FFA news, events, and animal programs in one place</p>
+  </header>
 
-<nav>
-  <a href="#animals">Animals</a>
-  <a href="#creed">FFA Creed</a>
-  <a href="#ai">FFA AI Help</a>
-  <a href="#messaging">Chapter Messenger</a>
-  <a href="#ffaOrg">Official FFA.org</a>
-</nav>
+  <nav>
+    <a href="#animals">Animals & CDEs</a>
+    <a href="#stories">Member Stories</a>
+    <a href="#awards">Awards & Competitions</a>
+    <a href="#events">Events & Conferences</a>
+    <a href="#advocacy">Advocacy & Careers</a>
+  </nav>
 
-<!-- Animals Section -->
-<section id="animals">
-  <h2>Common FFA Livestock & Animals</h2>
-  <div class="card animals">
-    <h3>Cattle</h3>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Cow_female_black_white.jpg" alt="Cow">
-    <p>Used in beef and dairy production. Featured in livestock judging competitions.</p>
-    <h3>Pigs</h3>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Pig_in_a_field.jpg" alt="Pig">
-    <p>Raised for meat. Important in swine production and competitions.</p>
-    <h3>Chickens</h3>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/7/70/Chicken_sitting.jpg" alt="Chicken">
-    <p>Raised for eggs and meat. Featured in poultry judging CDEs.</p>
-    <h3>Sheep</h3>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/Sheep_on_grass.jpg" alt="Sheep">
-    <p>Raised for wool and meat. Common in livestock judging events.</p>
-  </div>
-</section>
+  <main>
+    <input type="text" id="searchInput" placeholder="Search by keyword, animal, or year..." onkeyup="searchArticles()">
 
-<!-- FFA Creed -->
-<section id="creed">
-  <h2>FFA Creed</h2>
-  <div class="card">
-    <p>
-      <strong>The FFA Creed:</strong><br>
-      I believe in the future of agriculture, with a faith born not of words but of deeds — achievements won by the present and past generations of agriculturists; in the promise of better days through better ways, even as the better things we now enjoy have come to us from the struggles of former years.<br>
-      I believe that to live and work on a good farm, or to be engaged in other agricultural pursuits, is pleasant as well as challenging; for I know the joys and discomforts of agricultural life and hold an inborn fondness for those associations which, even in hours of discouragement, I cannot deny.<br>
-      I believe in leadership from ourselves and respect from others. I believe in my own ability to work efficiently and think clearly, with such knowledge and skill as I can secure, and in the ability of progressive agriculturists to serve our own and the public interest in producing and marketing the product of our toil.<br>
-      I believe in less dependence on begging and more power in bargaining; in the life abundant and enough honest wealth to help make it so — for others as well as myself; in less need for charity and more of it when needed; in being happy myself and playing square with those whose happiness depends upon me.<br>
-      I believe that American agriculture can and will hold true to the best traditions of our national life and that I can exert an influence in my home and community which will stand solid for my part in that inspiring task.
-    </p>
-  </div>
-</section>
+    <!-- Animals Section -->
+    <section id="animals">
+      <h2>Animals & CDEs</h2>
+      <ul id="animalList">
+        <li><a href="https://www.ffa.org/participate/cdes/veterinary-science/" target="_blank">Veterinary Science CDE</a></li>
+        <li><a href="https://www.ffa.org/participate/poultry/" target="_blank">Poultry Evaluation CDE</a></li>
+        <li><a href="https://www.ffa.org/participate/cdes/meats-evaluation-and-technology/" target="_blank">Meats Evaluation & Technology CDE</a></li>
+        <li><a href="https://www.ffa.org/participate/cdes/livestock-evaluation/" target="_blank">Livestock Evaluation CDE</a></li>
+        <li><a href="https://www.ffa.org/participate/cdes/horse-evaluation/" target="_blank">Horse Evaluation CDE</a></li>
+        <li><a href="https://www.ffa.org/participate/cdes/dairy-cattle-evaluation-management/" target="_blank">Dairy Cattle Evaluation & Management CDE</a></li>
+      </ul>
+    </section>
 
-<!-- FFA AI Study Assistant -->
-<section id="ai">
-  <h2>FFA AI Study Assistant</h2>
-  <div class="card">
-    <div>
-      <strong>Quick Topics:</strong><br>
-      <button class="topic-btn" onclick="fillTopic('FFA Creed')">FFA Creed</button>
-      <button class="topic-btn" onclick="fillTopic('CDE')">CDEs</button>
-      <button class="topic-btn" onclick="fillTopic('SAE')">SAEs</button>
-      <button class="topic-btn" onclick="fillTopic('Officers')">Officers</button>
-      <button class="topic-btn" onclick="fillTopic('Animals')">Animals</button>
-      <button class="topic-btn" onclick="fillTopic('Leadership')">Leadership</button>
-      <button class="topic-btn" onclick="fillTopic('Chapter')">Chapter Info</button>
-    </div>
-    <br>
-    <div id="chatBox"></div>
-    <input type="text" id="userInput" placeholder="Ask any FFA question...">
-    <button onclick="askAI()">Ask</button>
-    <button onclick="document.getElementById('chatBox').innerHTML = ''">Clear Chat</button>
-  </div>
-</section>
+    <!-- Member Stories Section -->
+    <section id="stories">
+      <h2>Member Success Stories</h2>
+      <ul>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/giving-students-goat-opportunities/" target="_blank">Nevaeh Locklear - Raising & Showing Goats</a></li>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/raise-a-life-change-a-life/" target="_blank">Aydin Anbarci - Training a Service Dog</a></li>
+        <li><a href="https://www.ffa.org/sae/equine-sae/" target="_blank">Roselynn Orr - Equine Apps</a></li>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/chasing-dreams-with-an-sae-katies-car-freshies/" target="_blank">Katie Aubert - Car Freshies Business</a></li>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/ffa-experience-new-opportunities/" target="_blank">Casey Spencer - Animal Passion Leads to Opportunities</a></li>
+      </ul>
+    </section>
 
-<!-- Chapter Messenger -->
-<section id="messaging">
-  <h2>FFA Chapter Messenger</h2>
-  <div class="card">
-    <div id="loginDiv">
-      <p>Enter a username to join the chat:</p>
-      <input type="text" id="usernameInput" placeholder="Your Name">
-      <button onclick="loginUser()">Login</button>
-      <p id="loginStatus" style="color:red;"></p>
-    </div>
+    <!-- Awards Section -->
+    <section id="awards">
+      <h2>Awards & Competitions</h2>
+      <ul>
+        <li><a href="https://www.ffa.org/american-star-awards/meet-the-finalists-2023-american-star-farmer/" target="_blank">2023 American Star Farmer Finalists</a></li>
+        <li><a href="https://www.ffa.org/american-star-awards/meet-the-finalists-2023-american-star-in-agriscience/" target="_blank">2023 American Star in Agriscience Finalists</a></li>
+        <li><a href="https://www.ffa.org/press-releases/national-ffa-announces-2020-national-agricultural-proficiency-winners/" target="_blank">2020 National Agricultural Proficiency Winners</a></li>
+        <li><a href="https://www.ffa.org/press-releases/national-ffa-announces-winners-for-national-ffa-agriscience-fair/" target="_blank">2020 National FFA Agriscience Fair Winners</a></li>
+      </ul>
+    </section>
 
-    <div id="messengerDiv" style="display:none;">
-      <div id="msgBox"></div>
-      <input type="text" id="msgInput" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
-      <button onclick="clearMessages()">Clear Messages</button>
-    </div>
-  </div>
-</section>
+    <!-- Events Section -->
+    <section id="events">
+      <h2>Events & Conferences</h2>
+      <ul>
+        <li><a href="https://www.ffa.org/press-releases/national-ffa-members-head-to-washington-d-c-for-washington-leadership-conference/" target="_blank">Washington Leadership Conference</a></li>
+        <li><a href="https://www.ffa.org/participate/next-generation-conference/" target="_blank">Next Gen Conference - Animal Systems Pathway</a></li>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/aggies-camp-inspires-youth-through-hands-on-lessons/" target="_blank">Aggie's Camp - Hands-on Animal Lessons</a></li>
+        <li><a href="https://www.ffa.org/ffa-in-the-usa/keeping-students-safe-on-the-farm/" target="_blank">Farm Safety Days</a></li>
+      </ul>
+    </section>
 
-<!-- FFA.org Embed -->
-<section id="ffaOrg">
-  <h2>Official FFA.org Website</h2>
-  <div class="card">
-    <p>Access the official FFA website for up-to-date news and resources:</p>
-    <a href="https://www.ffa.org/" target="_blank">Go to FFA.org</a>
-  </div>
-</section>
+    <!-- Advocacy & Careers Section -->
+    <section id="advocacy">
+      <h2>Advocacy & Careers</h2>
+      <ul>
+        <li><a href="https://www.ffa.org/agricultural-education/" target="_blank">Agricultural Education</a></li>
+        <li><a href="https://www.ffa.org/start-an-ffa-chapter/" target="_blank">Start an FFA Chapter</a></li>
+        <li><a href="https://www.ffa.org/ag-101/talking-points-speakag/" target="_blank">FFA Advocacy Talking Points</a></li>
+        <li><a href="https://www.ffa.org/career-pathways/5-emerging-steam-careers-in-agriculture/" target="_blank">Emerging STEAM Careers in Agriculture</a></li>
+      </ul>
+    </section>
+  </main>
 
-<footer>
-  © 2026 FFA Chapter Network | Built for Education
-</footer>
+  <footer>
+    &copy; 2026 FFA Animal & Agriculture Info | All Rights Reserved
+  </footer>
 
-<script>
-  // ===================== FFA AI using ChatGPT API =====================
-  async function askChatGPT(question) {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer YOUR_OPENAI_API_KEY" // Replace with your OpenAI key
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{role: "user", content: `Answer this FFA question using info from FFA.org: ${question}`}]
-      })
-    });
-    const data = await response.json();
-    return data.choices[0].message.content;
-  }
-
-  function fillTopic(topic) { document.getElementById("userInput").value = topic; }
-
-  async function askAI() {
-    const input = document.getElementById("userInput").value.trim();
-    if (!input) return;
-    const chatBox = document.getElementById("chatBox");
-
-    const userMessage = document.createElement("p");
-    userMessage.className = "user-msg";
-    userMessage.innerHTML = `<strong>You:</strong> ${input}`;
-    chatBox.appendChild(userMessage);
-
-    const response = document.createElement("p");
-    response.className = "ai-msg";
-    response.innerHTML = `<strong>FFA AI:</strong> Loading...`;
-    chatBox.appendChild(response);
-
-    const answer = await askChatGPT(input);
-    response.innerHTML = `<strong>FFA AI:</strong> ${answer}`;
-
-    chatBox.scrollTop = chatBox.scrollHeight;
-    document.getElementById("userInput").value = "";
-  }
-
-  // ===================== Chapter Messenger (Username login) =====================
-  let loggedInUser = null;
-  function loginUser() {
-    const username = document.getElementById("usernameInput").value.trim();
-    const status = document.getElementById("loginStatus");
-    if(username.length < 1) { status.textContent="Please enter a valid username."; return; }
-    loggedInUser = username;
-    document.getElementById("loginDiv").style.display="none";
-    document.getElementById("messengerDiv").style.display="block";
-    status.textContent="";
-    addSystemMessage(`✅ Logged in as ${loggedInUser}`);
-  }
-
-  const messages=[];
-  function sendMessage() {
-    const input=document.getElementById("msgInput").value.trim();
-    if(!input || !loggedInUser) return;
-    const msg={user:loggedInUser, text:input, time:new Date()};
-    messages.push(msg);
-    addMessage(msg);
-    document.getElementById("msgInput").value="";
-  }
-
-  function addMessage(msg) {
-    const msgBox=document.getElementById("msgBox");
-    const p=document.createElement("p");
-    p.innerHTML=`<strong>${msg.user}</strong> [${msg.time.toLocaleTimeString()}]: ${msg.text}`;
-    msgBox.appendChild(p);
-    msgBox.scrollTop=msgBox.scrollHeight;
-  }
-
-  function addSystemMessage(text) {
-    const msgBox=document.getElementById("msgBox");
-    const p=document.createElement("p");
-    p.style.fontStyle="italic";
-    p.style.color="var(--ffa-blue)";
-    p.textContent=text;
-    msgBox.appendChild(p);
-    msgBox.scrollTop=msgBox.scrollHeight;
-  }
-
-  function clearMessages() {
-    if(confirm("Clear all messages for this session?")) document.getElementById("msgBox").innerHTML="";
-  }
-</script>
+  <script>
+    function searchArticles() {
+      let input = document.getElementById('searchInput').value.toLowerCase();
+      let lists = document.querySelectorAll('section ul li');
+      lists.forEach(item => {
+        if(item.textContent.toLowerCase().includes(input)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+  </script>
 
 </body>
 </html>
