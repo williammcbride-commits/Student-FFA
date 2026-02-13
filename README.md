@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>FFA Chapter Network Complete</title>
+<title>FFA Chapter Network Online</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
 
 <style>
+
 body{
-margin:0;
 font-family:Arial;
 background:linear-gradient(to bottom right,#0b5e2a,#d4af37);
 color:white;
+margin:0;
 }
 
 header{
@@ -27,31 +31,6 @@ padding:10px;
 background:rgba(0,0,0,0.4);
 padding:10px;
 border-radius:10px;
-}
-
-#calendar{
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:5px;
-padding:10px;
-}
-
-.day{
-background:white;
-color:black;
-min-height:80px;
-border-radius:6px;
-padding:5px;
-cursor:pointer;
-}
-
-.event{
-background:#0b5e2a;
-color:white;
-margin-top:3px;
-border-radius:4px;
-padding:2px;
-font-size:12px;
 }
 
 #chatBox{
@@ -76,20 +55,24 @@ padding:10px;
 background:gold;
 color:black;
 padding:5px;
-margin:3px;
 }
+
 </style>
+
 </head>
 
 <body>
 
-<header>FFA Chapter Network</header>
+<header>FFA Chapter Network Online</header>
 
 <div class="top">
 
 <div class="box">
-Officer Position<br>
+
+Officer Position
+
 <select id="position">
+
 <option>President</option>
 <option>Vice President</option>
 <option>Secretary</option>
@@ -97,42 +80,54 @@ Officer Position<br>
 <option>Reporter</option>
 <option>Sentinel</option>
 <option>Member</option>
+
 </select>
+
 </div>
 
 <div class="box">
-Command Box<br>
+
+Command
+
 <input id="commandInput">
+
 <button onclick="runCommand()">Run</button>
-<div id="output"></div>
-</div>
 
 </div>
-
-<div class="box">
-
-<button onclick="prevMonth()">Prev</button>
-<span id="month"></span>
-<button onclick="nextMonth()">Next</button>
-
-<div id="calendar"></div>
 
 </div>
 
 <div id="chatBox"></div>
 
 <div class="chatInput">
+
 <input id="chatInput">
+
 <button onclick="sendMessage()">Send</button>
+
 </div>
 
 <script>
 
-let chatLocked=false;
-let officerOnly=false;
-let muted=false;
+// PASTE YOUR FIREBASE CONFIG HERE
 
-const officers=[
+const firebaseConfig = {
+
+apiKey: "PASTE",
+authDomain: "PASTE",
+databaseURL: "PASTE",
+projectId: "PASTE",
+storageBucket: "PASTE",
+messagingSenderId: "PASTE",
+appId: "PASTE"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+const officers = [
 "President",
 "Vice President",
 "Secretary",
@@ -141,202 +136,91 @@ const officers=[
 "Sentinel"
 ];
 
-const banned=["badword","hell","damn"];
+const banned = ["badword","hell","damn"];
 
 function filter(msg){
-banned.forEach(w=>{
-msg=msg.replace(new RegExp(w,"gi"),"****");
-});
-return msg;
-}
 
-function isOfficer(){
-let pos=document.getElementById("position").value;
-return officers.includes(pos);
+banned.forEach(word=>{
+
+msg=msg.replace(new RegExp(word,"gi"),"****");
+
+});
+
+return msg;
+
 }
 
 function sendMessage(){
 
-if(chatLocked)return;
-
-if(officerOnly && !isOfficer())return;
-
-if(muted && !isOfficer())return;
+let pos=document.getElementById("position").value;
 
 let msg=document.getElementById("chatInput").value;
 
 msg=filter(msg);
 
-let pos=document.getElementById("position").value;
+db.ref("chat").push({
 
-chatBox.innerHTML+=pos+": "+msg+"<br>";
+position:pos,
+message:msg,
+time:Date.now()
 
-}
-
-function runCommand(){
-
-let cmd=document.getElementById("commandInput").value.toLowerCase();
-
-let out=document.getElementById("output");
-
-if(cmd=="help"){
-
-out.innerHTML=`
-clear chat<br>
-lock chat<br>
-unlock chat<br>
-mute all<br>
-unmute all<br>
-announce [message]<br>
-add event<br>
-clear events<br>
-officer only<br>
-everyone<br>
-animal careers<br>
-animal systems<br>
-vet info<br>
-ffa awards<br>
-ffa news<br>
-`;
+});
 
 }
 
-else if(cmd=="clear chat"){
-chatBox.innerHTML="";
-}
+db.ref("chat").on("child_added", snapshot=>{
 
-else if(cmd=="lock chat"){
-chatLocked=true;
-}
-
-else if(cmd=="unlock chat"){
-chatLocked=false;
-}
-
-else if(cmd=="mute all"){
-muted=true;
-}
-
-else if(cmd=="unmute all"){
-muted=false;
-}
-
-else if(cmd=="officer only"){
-officerOnly=true;
-}
-
-else if(cmd=="everyone"){
-officerOnly=false;
-}
-
-else if(cmd.startsWith("announce")){
-
-let msg=cmd.replace("announce","");
-
-chatBox.innerHTML+=
-"<div class='announcement'>ANNOUNCEMENT:"+msg+"</div>";
-
-}
-
-else if(cmd=="clear events"){
-events={};
-renderCalendar();
-}
-
-else if(cmd=="animal careers"){
-alert("FFA members explore careers like veterinary science, livestock production, animal nutrition, and animal biotechnology.");
-}
-
-else if(cmd=="animal systems"){
-alert("Animal systems include breeding, feeding, animal health, genetics, and livestock management.");
-}
-
-else if(cmd=="vet info"){
-alert("Veterinary careers include veterinarians, vet technicians, and animal scientists.");
-}
-
-else if(cmd=="ffa awards"){
-alert("FFA offers Agriscience Fair awards, proficiency awards, and American Star awards.");
-}
-
-else if(cmd=="ffa news"){
-alert("FFA members attend conventions, leadership conferences, and career exploration events.");
-}
-
-else{
-out.innerText="Unknown command";
-}
-
-}
-
-
-// CALENDAR
-
-let date=new Date();
-let events={};
-
-function renderCalendar(){
-
-calendar.innerHTML="";
-
-let year=date.getFullYear();
-let month=date.getMonth();
-
-monthLabel.innerText=
-date.toLocaleString("default",{month:"long"})+" "+year;
-
-let first=new Date(year,month,1).getDay();
-let days=new Date(year,month+1,0).getDate();
-
-for(let i=0;i<first;i++){
-calendar.innerHTML+="<div></div>";
-}
-
-for(let d=1;d<=days;d++){
-
-let key=year+"-"+month+"-"+d;
+let data=snapshot.val();
 
 let div=document.createElement("div");
 
-div.className="day";
+div.innerText=data.position+": "+data.message;
 
-div.innerHTML=d;
+chatBox.appendChild(div);
 
-if(events[key]){
-events[key].forEach(e=>{
-div.innerHTML+="<div class='event'>"+e+"</div>";
+chatBox.scrollTop=chatBox.scrollHeight;
+
 });
-}
 
-div.onclick=function(){
+function runCommand(){
 
-let name=prompt("Event name");
+let cmd=document.getElementById("commandInput").value;
 
-if(!events[key])events[key]=[];
+if(cmd.startsWith("announce")){
 
-events[key].push(name);
+let msg=cmd.replace("announce","");
 
-renderCalendar();
+db.ref("announcements").push({
 
-};
+message:msg
 
-calendar.appendChild(div);
-
-}
+});
 
 }
 
-function prevMonth(){
-date.setMonth(date.getMonth()-1);
-renderCalendar();
+if(cmd=="clear chat"){
+
+db.ref("chat").remove();
+
+chatBox.innerHTML="";
+
 }
 
-function nextMonth(){
-date.setMonth(date.getMonth()+1);
-renderCalendar();
 }
 
-renderCalendar();
+db.ref("announcements").on("child_added", snapshot=>{
+
+let data=snapshot.val();
+
+let div=document.createElement("div");
+
+div.className="announcement";
+
+div.innerText="ANNOUNCEMENT: "+data.message;
+
+chatBox.appendChild(div);
+
+});
 
 </script>
 
