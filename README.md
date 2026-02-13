@@ -1,228 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>FFA Chapter Network Online</title>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FFA Chapter Network</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <style>
-
-body{
-font-family:Arial;
-background:linear-gradient(to bottom right,#0b5e2a,#d4af37);
-color:white;
-margin:0;
-}
-
-header{
-text-align:center;
-padding:15px;
-font-size:28px;
-}
-
-.top{
-display:flex;
-justify-content:space-between;
-padding:10px;
-}
-
-.box{
-background:rgba(0,0,0,0.4);
-padding:10px;
-border-radius:10px;
-}
-
-#chatBox{
-position:fixed;
-bottom:60px;
-width:100%;
-height:200px;
-background:white;
-color:black;
-overflow:auto;
-}
-
-.chatInput{
-position:fixed;
-bottom:0;
-width:100%;
-background:#0b5e2a;
-padding:10px;
-}
-
-.announcement{
-background:gold;
-color:black;
-padding:5px;
-}
-
+  body { font-family: 'Caveat', cursive; background: linear-gradient(135deg, #006400, #FFD700); margin:0; height:100vh; display:flex; flex-direction:column;}
+  #top { display:flex; justify-content: space-between; padding:10px; background:rgba(255,255,255,0.2);}
+  #officerSelect { width:200px; }
+  #commandInput { width:300px; }
+  #chat { flex:1; padding:10px; overflow-y:auto; border-top:2px solid #fff; background:rgba(255,255,255,0.1);}
+  #messageInput { width:calc(100% - 20px); padding:5px; margin:5px; }
+  .message { margin-bottom:10px; }
+  .admin { font-weight:bold; color:red; }
+  .animal-info { background:rgba(255,255,255,0.3); margin:5px; padding:5px; border-radius:5px; }
+  button { cursor:pointer; padding:3px 6px; margin-left:5px; }
 </style>
-
 </head>
-
 <body>
+  <div id="top">
+    <select id="officerSelect">
+      <option value="">Select Officer Position</option>
+      <option value="President">President</option>
+      <option value="Vice President">Vice President</option>
+      <option value="Secretary">Secretary</option>
+      <option value="Treasurer">Treasurer</option>
+      <option value="Reporter">Reporter</option>
+      <option value="Sentinel">Sentinel</option>
+    </select>
+    <input type="text" id="commandInput" placeholder="Enter command here...">
+  </div>
 
-<header>FFA Chapter Network Online</header>
-
-<div class="top">
-
-<div class="box">
-
-Officer Position
-
-<select id="position">
-
-<option>President</option>
-<option>Vice President</option>
-<option>Secretary</option>
-<option>Treasurer</option>
-<option>Reporter</option>
-<option>Sentinel</option>
-<option>Member</option>
-
-</select>
-
-</div>
-
-<div class="box">
-
-Command
-
-<input id="commandInput">
-
-<button onclick="runCommand()">Run</button>
-
-</div>
-
-</div>
-
-<div id="chatBox"></div>
-
-<div class="chatInput">
-
-<input id="chatInput">
-
-<button onclick="sendMessage()">Send</button>
-
-</div>
+  <div id="chat"></div>
+  <input type="text" id="messageInput" placeholder="Type message...">
 
 <script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-// PASTE YOUR FIREBASE CONFIG HERE
+  // Sign in anonymously for demo
+  auth.signInAnonymously();
 
-const firebaseConfig = {
+  const chatDiv = document.getElementById('chat');
+  const msgInput = document.getElementById('messageInput');
+  const cmdInput = document.getElementById('commandInput');
+  const officerSelect = document.getElementById('officerSelect');
 
-apiKey: "PASTE",
-authDomain: "PASTE",
-databaseURL: "PASTE",
-projectId: "PASTE",
-storageBucket: "PASTE",
-messagingSenderId: "PASTE",
-appId: "PASTE"
+  let officerPosition = "";
+  officerSelect.addEventListener('change', () => {
+    officerPosition = officerSelect.value;
+  });
 
-};
+  function addMessage(user, text, isAdmin=false) {
+    const div = document.createElement('div');
+    div.className = 'message' + (isAdmin ? ' admin' : '');
+    div.innerHTML = `<b>${user}:</b> ${text}`;
+    chatDiv.appendChild(div);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
 
-firebase.initializeApp(firebaseConfig);
+  // Load messages
+  db.ref('messages').on('child_added', snapshot => {
+    const msg = snapshot.val();
+    addMessage(msg.user, msg.text, msg.isAdmin);
+  });
 
-const db = firebase.database();
+  // Send message
+  msgInput.addEventListener('keypress', e => {
+    if(e.key==='Enter'){
+      const text = msgInput.value.trim();
+      if(!text) return;
+      db.ref('messages').push({ user: officerPosition || 'Member', text, isAdmin:false });
+      msgInput.value='';
+    }
+  });
 
-const officers = [
-"President",
-"Vice President",
-"Secretary",
-"Treasurer",
-"Reporter",
-"Sentinel"
-];
+  // Commands system
+  cmdInput.addEventListener('keypress', e => {
+    if(e.key==='Enter'){
+      const cmd = cmdInput.value.trim().toLowerCase();
+      cmdInput.value='';
+      if(cmd === '/animalinfo'){
+        // All animal info from your previous pages
+        const animals = [
+          { name: "Goats", link:"https://www.ffa.org/ffa-in-the-usa/giving-students-goat-opportunities/" },
+          { name: "Bees", link:"https://www.ffa.org/the-feed/buzzworthy-facts-bees-honey/" },
+          { name: "Dogs", link:"https://www.ffa.org/ffa-in-the-usa/raise-a-life-change-a-life/" },
+          { name: "Cattle", link:"https://www.ffa.org/the-feed/cambridge-ffa-develops-spanish-learning-program/" },
+          { name: "Horses", link:"https://www.ffa.org/participate/cdes/horse-evaluation/" },
+          { name: "Poultry", link:"https://www.ffa.org/participate/poultry/" },
+          { name: "Dairy Cattle", link:"https://www.ffa.org/participate/cdes/dairy-cattle-evaluation-management/" },
+          { name: "Elephants", link:"https://www.ffa.org/ffa-new-horizons/engineering-for-elephants/" }
+        ];
+        animals.forEach(a => addMessage("Animal Info", `<a href="${a.link}" target="_blank">${a.name}</a>`));
+      }
+      else if(cmd === '/help'){
+        addMessage("System", "Available commands: /animalinfo, /help, /clear, /ai");
+      }
+      else if(cmd === '/clear'){
+        chatDiv.innerHTML='';
+      }
+      else if(cmd.startsWith('/ai')){
+        const userQuery = cmd.slice(4);
+        addMessage("FFA AI", `You asked: ${userQuery} <br>Response: Sorry! AI module placeholder.`);
+      }
+      else{
+        addMessage("System", "Unknown command. Type /help");
+      }
+    }
+  });
 
-const banned = ["badword","hell","damn"];
-
-function filter(msg){
-
-banned.forEach(word=>{
-
-msg=msg.replace(new RegExp(word,"gi"),"****");
-
-});
-
-return msg;
-
-}
-
-function sendMessage(){
-
-let pos=document.getElementById("position").value;
-
-let msg=document.getElementById("chatInput").value;
-
-msg=filter(msg);
-
-db.ref("chat").push({
-
-position:pos,
-message:msg,
-time:Date.now()
-
-});
-
-}
-
-db.ref("chat").on("child_added", snapshot=>{
-
-let data=snapshot.val();
-
-let div=document.createElement("div");
-
-div.innerText=data.position+": "+data.message;
-
-chatBox.appendChild(div);
-
-chatBox.scrollTop=chatBox.scrollHeight;
-
-});
-
-function runCommand(){
-
-let cmd=document.getElementById("commandInput").value;
-
-if(cmd.startsWith("announce")){
-
-let msg=cmd.replace("announce","");
-
-db.ref("announcements").push({
-
-message:msg
-
-});
-
-}
-
-if(cmd=="clear chat"){
-
-db.ref("chat").remove();
-
-chatBox.innerHTML="";
-
-}
-
-}
-
-db.ref("announcements").on("child_added", snapshot=>{
-
-let data=snapshot.val();
-
-let div=document.createElement("div");
-
-div.className="announcement";
-
-div.innerText="ANNOUNCEMENT: "+data.message;
-
-chatBox.appendChild(div);
-
-});
-
+  // Admin Panel: delete messages
+  chatDiv.addEventListener('click', e => {
+    if(e.target.classList.contains('message') && confirm("Delete this message?")){
+      e.target.remove();
+    }
+  });
 </script>
-
 </body>
 </html>
