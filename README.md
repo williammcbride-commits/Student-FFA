@@ -3,133 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FFA Chapter Network</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<title>FFA Chat Interface</title>
 <style>
-  body { font-family: 'Caveat', cursive; background: linear-gradient(135deg, #006400, #FFD700); margin:0; height:100vh; display:flex; flex-direction:column;}
-  #top { display:flex; justify-content: space-between; padding:10px; background:rgba(255,255,255,0.2);}
-  #officerSelect { width:200px; }
-  #commandInput { width:300px; }
-  #chat { flex:1; padding:10px; overflow-y:auto; border-top:2px solid #fff; background:rgba(255,255,255,0.1);}
-  #messageInput { width:calc(100% - 20px); padding:5px; margin:5px; }
-  .message { margin-bottom:10px; }
-  .admin { font-weight:bold; color:red; }
-  .animal-info { background:rgba(255,255,255,0.3); margin:5px; padding:5px; border-radius:5px; }
-  button { cursor:pointer; padding:3px 6px; margin-left:5px; }
+    body { margin:0; font-family:'Cavnet', cursive; background: #004d00; color: #fff; }
+    #container { display:flex; flex-direction:column; height:100vh; }
+    #top { display:flex; justify-content:space-between; padding:10px; background:#006400; }
+    #officerBox { display:flex; flex-direction:column; }
+    #commandBox { display:flex; flex-direction:column; }
+    select, input { padding:5px; font-family:'Cavnet', cursive; }
+    #chatArea { flex:1; overflow-y:auto; padding:10px; background:#003300; }
+    .message { margin:5px 0; }
+    #inputArea { display:flex; padding:10px; background:#006400; }
+    #userInput { flex:1; padding:5px; font-family:'Cavnet', cursive; }
+    #sendBtn { padding:5px 10px; margin-left:5px; background:#ffd700; border:none; cursor:pointer; font-family:'Cavnet', cursive; }
+    .announcement { color:#ffd700; font-weight:bold; }
+    .private { color:#ff69b4; }
+    a { color:#ffd700; text-decoration:none; }
 </style>
 </head>
 <body>
-  <div id="top">
-    <select id="officerSelect">
-      <option value="">Select Officer Position</option>
-      <option value="President">President</option>
-      <option value="Vice President">Vice President</option>
-      <option value="Secretary">Secretary</option>
-      <option value="Treasurer">Treasurer</option>
-      <option value="Reporter">Reporter</option>
-      <option value="Sentinel">Sentinel</option>
-    </select>
-    <input type="text" id="commandInput" placeholder="Enter command here...">
-  </div>
-
-  <div id="chat"></div>
-  <input type="text" id="messageInput" placeholder="Type message...">
+<div id="container">
+    <div id="top">
+        <div id="officerBox">
+            <label>Officer Position:</label>
+            <select id="officerSelect">
+                <option value="Advisor">Advisor</option>
+                <option value="President">President</option>
+                <option value="Vice President">Vice President</option>
+                <option value="Secretary">Secretary</option>
+                <option value="Treasurer">Treasurer</option>
+                <option value="Reporter">Reporter</option>
+                <option value="Sentinel">Sentinel</option>
+                <option value="Member">Member</option>
+            </select>
+        </div>
+        <div id="commandBox">
+            <label>Command Input:</label>
+            <input type="text" id="commandInput" placeholder="Enter command...">
+        </div>
+    </div>
+    <div id="chatArea"></div>
+    <div id="inputArea">
+        <input type="text" id="userInput" placeholder="Type a message...">
+        <button id="sendBtn">Send</button>
+    </div>
+</div>
 
 <script>
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const commandInput = document.getElementById('commandInput');
+const officerSelect = document.getElementById('officerSelect');
 
-  // Sign in anonymously for demo
-  auth.signInAnonymously();
+let chatLocked = false;
+let officerOnly = false;
+let muted = false;
 
-  const chatDiv = document.getElementById('chat');
-  const msgInput = document.getElementById('messageInput');
-  const cmdInput = document.getElementById('commandInput');
-  const officerSelect = document.getElementById('officerSelect');
+const ffaAnimalLinks = [
+    {name: 'Tips and Tricks for Raising a Market Hog', url:'https://www.ffa.org/the-feed/tips-and-tricks-for-raising-a-market-hog/'},
+    {name: 'Aggie’s Camp Inspires Youth Through Hands-On Lessons', url:'https://www.ffa.org/ffa-in-the-usa/aggies-camp-inspires-youth/'},
+    {name: 'Giving Students Goat Opportunities', url:'https://www.ffa.org/ffa-in-the-usa/giving-students-goat-opportunities/'},
+    {name: '6 Buzzworthy Facts About Bees and Honey', url:'https://www.ffa.org/the-feed/buzzworthy-facts-bees-honey/'},
+    {name: 'Poultry SAE Hatches a Large Following', url:'https://www.ffa.org/ffa-new-horizons/poultry-sae-hatches-a-large-following/'},
+    {name: 'Engineering for Elephants', url:'https://www.ffa.org/ffa-new-horizons/engineering-for-elephants/'},
+    {name: 'Veterinary Science', url:'https://www.ffa.org/participate/cdes/veterinary-science/'},
+    {name: 'Livestock Evaluation', url:'https://www.ffa.org/participate/cdes/livestock-evaluation/'},
+    {name: 'Dairy Cattle Evaluation & Management', url:'https://www.ffa.org/participate/cdes/dairy-cattle-evaluation-management/'},
+    {name: 'Horse Evaluation', url:'https://www.ffa.org/participate/cdes/horse-evaluation/'},
+    {name: 'Meats Evaluation & Technology', url:'https://www.ffa.org/participate/cdes/meats-evaluation-and-technology/'}
+];
 
-  let officerPosition = "";
-  officerSelect.addEventListener('change', () => {
-    officerPosition = officerSelect.value;
-  });
+const commands = {
+    'clear chat': () => chatArea.innerHTML = '',
+    'help': () => addMessage('Available commands: /clear chat, /help, /lock chat, /unlock chat, /mute all, /unmute all, /announce [message], /add event, /clear events, /officer only, /everyone, /animal info, /msg [user] [message]'),
+    'lock chat': () => { chatLocked=true; addMessage('Chat is now locked.'); },
+    'unlock chat': () => { chatLocked=false; addMessage('Chat is now unlocked.'); },
+    'mute all': () => { muted=true; addMessage('All members muted.'); },
+    'unmute all': () => { muted=false; addMessage('All members can speak again.'); },
+    'officer only': () => { officerOnly=true; addMessage('Only officers can chat now.'); },
+    'everyone': () => { officerOnly=false; addMessage('Everyone can chat now.'); },
+    'add event': () => addMessage('Event creation opened (placeholder).'),
+    'clear events': () => addMessage('All events cleared (placeholder).'),
+    'announce': msg => addMessage(msg, 'announcement'),
+    'animal info': () => {
+        ffaAnimalLinks.forEach(info => {
+            const a = document.createElement('a');
+            a.href = info.url;
+            a.target = '_blank';
+            a.innerText = info.name;
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.appendChild(a);
+            chatArea.appendChild(div);
+        });
+        chatArea.scrollTop = chatArea.scrollHeight;
+    },
+    'msg': parts => {
+        const targetUser = parts[1];
+        const message = parts.slice(2).join(' ');
+        if(!targetUser || !message) return addMessage('Usage: /msg [user] [message]');
+        addMessage('(Private) ' + officerSelect.value + ' to ' + targetUser + ': ' + message, 'private');
+    }
+};
 
-  function addMessage(user, text, isAdmin=false) {
+function addMessage(msg, type='normal') {
     const div = document.createElement('div');
-    div.className = 'message' + (isAdmin ? ' admin' : '');
-    div.innerHTML = `<b>${user}:</b> ${text}`;
-    chatDiv.appendChild(div);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-  }
+    div.className = 'message';
+    if(type==='announcement') div.classList.add('announcement');
+    if(type==='private') div.classList.add('private');
+    div.innerText = msg;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
 
-  // Load messages
-  db.ref('messages').on('child_added', snapshot => {
-    const msg = snapshot.val();
-    addMessage(msg.user, msg.text, msg.isAdmin);
-  });
+function processCommand(input) {
+    if(!input.startsWith('/')) return addMessage('Commands must start with /');
+    const parts = input.slice(1).split(' ');
+    const cmd = parts[0].toLowerCase();
+    const isAdvisor = officerSelect.value==='Advisor';
 
-  // Send message
-  msgInput.addEventListener('keypress', e => {
-    if(e.key==='Enter'){
-      const text = msgInput.value.trim();
-      if(!text) return;
-      db.ref('messages').push({ user: officerPosition || 'Member', text, isAdmin:false });
-      msgInput.value='';
+    if(cmd==='announce') {
+        const msg = parts.slice(1).join(' ');
+        if(isAdvisor || officerSelect.value!=='Member') commands['announce'](msg);
+        else addMessage('Only officers and advisors can use this command.');
+    } else if(cmd==='animal' && parts[1]==='info') {
+        commands['animal info']();
+    } else if(cmd==='msg') {
+        commands['msg'](parts);
+    } else if(commands[cmd]) {
+        if(isAdvisor || officerSelect.value!=='Member') commands[cmd]();
+        else addMessage('Only officers and advisors can use this command.');
+    } else {
+        addMessage('Unknown command. Type /help for commands.');
     }
-  });
+}
 
-  // Commands system
-  cmdInput.addEventListener('keypress', e => {
-    if(e.key==='Enter'){
-      const cmd = cmdInput.value.trim().toLowerCase();
-      cmdInput.value='';
-      if(cmd === '/animalinfo'){
-        // All animal info from your previous pages
-        const animals = [
-          { name: "Goats", link:"https://www.ffa.org/ffa-in-the-usa/giving-students-goat-opportunities/" },
-          { name: "Bees", link:"https://www.ffa.org/the-feed/buzzworthy-facts-bees-honey/" },
-          { name: "Dogs", link:"https://www.ffa.org/ffa-in-the-usa/raise-a-life-change-a-life/" },
-          { name: "Cattle", link:"https://www.ffa.org/the-feed/cambridge-ffa-develops-spanish-learning-program/" },
-          { name: "Horses", link:"https://www.ffa.org/participate/cdes/horse-evaluation/" },
-          { name: "Poultry", link:"https://www.ffa.org/participate/poultry/" },
-          { name: "Dairy Cattle", link:"https://www.ffa.org/participate/cdes/dairy-cattle-evaluation-management/" },
-          { name: "Elephants", link:"https://www.ffa.org/ffa-new-horizons/engineering-for-elephants/" }
-        ];
-        animals.forEach(a => addMessage("Animal Info", `<a href="${a.link}" target="_blank">${a.name}</a>`));
-      }
-      else if(cmd === '/help'){
-        addMessage("System", "Available commands: /animalinfo, /help, /clear, /ai");
-      }
-      else if(cmd === '/clear'){
-        chatDiv.innerHTML='';
-      }
-      else if(cmd.startsWith('/ai')){
-        const userQuery = cmd.slice(4);
-        addMessage("FFA AI", `You asked: ${userQuery} <br>Response: Sorry! AI module placeholder.`);
-      }
-      else{
-        addMessage("System", "Unknown command. Type /help");
-      }
+sendBtn.addEventListener('click', () => {
+    const msg = userInput.value.trim();
+    if(!msg) return;
+    if(msg.startsWith('/')) {
+        processCommand(msg);
+    } else {
+        if(chatLocked) return addMessage('Chat is locked.');
+        if(officerOnly && !['Advisor','President','Vice President','Secretary','Treasurer','Reporter','Sentinel'].includes(officerSelect.value)) return addMessage('Only officers can chat now.');
+        if(muted && officerSelect.value==='Member') return addMessage('You are muted.');
+        addMessage(officerSelect.value + ': ' + msg);
     }
-  });
+    userInput.value='';
+});
 
-  // Admin Panel: delete messages
-  chatDiv.addEventListener('click', e => {
-    if(e.target.classList.contains('message') && confirm("Delete this message?")){
-      e.target.remove();
+commandInput.addEventListener('keypress', e => {
+    if(e.key==='Enter') {
+        processCommand(commandInput.value.trim());
+        commandInput.value='';
     }
-  });
+});
 </script>
 </body>
 </html>
